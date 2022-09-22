@@ -1,0 +1,19 @@
+node_modules
+
+#Secret
+.env
+/encryptedKeys
+
+typechain
+typechain-types
+
+#Hardhat files
+cache
+artifacts
+gas-report.txt
+coverage
+coverage.json
+
+.DS_Store
+yarn.lock
+
