@@ -1,4 +1,4 @@
-require("@nomiclabs/hardhat-waffle");
+require("@nomicfoundation/hardhat-chai-matchers")
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-deploy");
 require("solidity-coverage");
@@ -35,4 +35,20 @@ module.exports = {
             default: 1,
         },
     },
+    etherscan: {
+        apiKey: {
+            goerli: ETHERSCAN_API_KEY,
+        },
+    },
+    gasReporter: {
+        enabled: true,
+        outputFile: "gas-report.txt",
+        noColors: true,
+        currency: "EUR",
+        // coinmarketcap: CMC_API_KEY,
+        // token: 'MATIC',
+    },
+    mocha: {
+        timeout: 300000 // 200 sec max
+      }
 };
