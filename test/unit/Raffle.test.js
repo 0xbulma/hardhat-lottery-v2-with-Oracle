@@ -105,9 +105,11 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   await helpers.time.increase(interval.toNumber() + 1);
                   const txResponse = await raffle.performUpkeep([]);
                   const txReceipt = await txResponse.wait(1);
-                  const requestId = txReceipt.events[1].args.requestId;
+                  const requestId = txReceipt.events[2].args.requestId;
+                  const state = txReceipt.events[0].args.state;
                   const raffleState = await raffle.getRaffleState();
                   expect(requestId.toNumber()).to.be.greaterThan(0);
+                  expect(state).to.equal(1);
                   expect(raffleState.toString()).to.equal("1");
               });
           });
@@ -141,7 +143,7 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   // performUpkeep (mock chainlink keepers)
                   // fullfillRandomWords (mock chainlink VRF)
 
-                  await new Promise(async (resolve, reject) => {
+                  new Promise(async (resolve, reject) => {
                       raffle.once("WinnerPicked", async () => {
                           try {
                               const recentWinner = await raffle.getRecentWinner();
@@ -175,6 +177,7 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                           txReceipt.events[1].args.requestId,
                           raffle.address
                       );
+                      
                   });
               });
           });

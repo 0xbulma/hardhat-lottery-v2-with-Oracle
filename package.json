@@ -9,6 +9,7 @@
     "test:local": "yarn hardhat test --network localhost",
     "test:goerli": "yarn hardhat test --network goerli",
     "start:local": "yarn hardhat node",
+    "mock:local": "yarn hardhat run scripts/mockOffchain.js --network localhost",
     "deploy:hh": "yarn hardhat deploy --network hardhat",
     "deploy:local": "yarn hardhat deploy --network localhost",
     "deploy:goerli": "yarn hardhat deploy --network goerli",

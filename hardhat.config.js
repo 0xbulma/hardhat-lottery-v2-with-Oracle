@@ -1,4 +1,4 @@
-require("@nomicfoundation/hardhat-chai-matchers")
+require("@nomicfoundation/hardhat-chai-matchers");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-deploy");
 require("solidity-coverage");
@@ -16,16 +16,19 @@ module.exports = {
     solidity: "0.8.17",
     defaultNetwork: "hardhat",
     networks: {
-      hardhat : {
-        chainId : 31337,
-        blockConfirmations: 1,
-      },
-      goerli: {
-        chainId: 5,
-        blockConfirmations: 6,
-        url: GOERLI_RPC_URL,
-        accounts: [PRIVATE_KEY]
-      }
+        hardhat: {
+            chainId: 31337,
+            blockConfirmations: 1,
+        },
+        localhost: {
+            chainId: 31337,
+        },
+        goerli: {
+            chainId: 5,
+            blockConfirmations: 6,
+            url: GOERLI_RPC_URL,
+            accounts: [PRIVATE_KEY],
+        },
     },
     namedAccounts: {
         deployer: {
@@ -49,6 +52,6 @@ module.exports = {
         // token: 'MATIC',
     },
     mocha: {
-        timeout: 300000 // 200 sec max
-      }
+        timeout: 300000, // 200 sec max
+    },
 };

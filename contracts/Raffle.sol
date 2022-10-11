@@ -11,18 +11,19 @@ pragma solidity ^0.8.17;
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
+import "hardhat/console.sol";
 
 error Raffle__NotEnoughETHEntered();
 error Raffle__TransferFailed();
 error Raffle__NotOpen();
+error Raffle__NoPlayers();
 error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
-
-/** @title A sample Raffle Contract 
+/** @title A sample Raffle Contract
  *  @author Benjamin Anoufa
  *  @notice This contract is for creating a untamperable decentralized smart contract
  *  @dev this implements Chainlink VRF v2 and Chainlink keepers
- * */ 
+ * */
 contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     /* Type declarations */
     enum RaffleState {
@@ -51,6 +52,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     event RaffleEnter(address indexed player);
     event RequestedRaffleWinner(uint256 indexed requestId);
     event WinnerPicked(address indexed winner);
+    event StateRaffle(RaffleState indexed state);
 
     /* Functions */
     constructor(
@@ -77,6 +79,9 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         }
         if (s_raffleState != RaffleState.OPEN) {
             revert Raffle__NotOpen();
+        }
+        if (s_players.length == 0 && ((block.timestamp - s_lastTimeStamp) > i_interval)) {
+            s_lastTimeStamp = block.timestamp;
         }
         s_players.push(payable(msg.sender));
         emit RaffleEnter(msg.sender);
@@ -105,6 +110,11 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval);
         bool hasPlayers = (s_players.length > 0);
         bool hasBalance = (address(this).balance > 0);
+        console.log("isopen", isOpen);
+        console.log("timePassed", timePassed);
+        console.log("hasPlayers", hasPlayers);
+        console.log("hasBalance", hasBalance);
+
         upkeepNeeded = (isOpen && timePassed && hasPlayers && hasBalance);
         // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
     }
@@ -112,7 +122,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     function performUpkeep(
         bytes calldata /* performData */
     ) external override {
-        (bool upkeepNeeded, ) = checkUpkeep('');
+        (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffle__UpkeepNotNeeded(
                 address(this).balance,
@@ -122,6 +132,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         }
 
         s_raffleState = RaffleState.CALCULATING;
+        emit StateRaffle(s_raffleState);
         uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane, //gazlane
             i_subscriptionId,
@@ -141,6 +152,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         address payable recentWinner = s_players[indexOfWinner];
         s_recentWinner = recentWinner;
         s_raffleState = RaffleState.OPEN;
+        emit StateRaffle(s_raffleState);
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
@@ -175,6 +187,13 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         return s_players.length;
     }
 
+    function getPlayers() public view returns (address payable[] memory) {
+        if(s_players.length == 0){
+            revert Raffle__NoPlayers();
+        }
+        return s_players;
+    }
+
     function getLatestTimeStamp() public view returns (uint256) {
         return s_lastTimeStamp;
     }
@@ -183,8 +202,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         return REQUEST_CONFIRMATIONS;
     }
 
-    function getInterval() public view returns (uint256){
+    function getInterval() public view returns (uint256) {
         return i_interval;
     }
-
 }
